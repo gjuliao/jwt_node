@@ -13,27 +13,12 @@ const registerSchema = Joi.object({
     password: Joi.string().min(3).required(),
 })
 
+// Function to check if email already exists
+async function isEmailTaken(email) {
+    return await User.findOne({ email: email });
+}
+
 router.post("/register", async(req, res) => {
-    // checking if user email is already registered
-    const emailExist = await User.findOne({email: req.body.email});
-
-    if (emailExist) {
-        res.status(400).send('Email already exists');
-        return;
-    }
-
-    // hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
-    // adding user
-
-    const user = new User({
-        fname: req.body.fname,
-        lname: req.body.lname,
-        email: req.body.email,
-        password: hashedPassword,
-    });
 
     try {
         // validate user input
@@ -43,17 +28,35 @@ router.post("/register", async(req, res) => {
         // getting error if exists with object deconstruction
 
         if(error){
-            res.status(400).send(error.details[0].message);
-            return;
-        } else {
-            // add user
-            const saveUser = await user.save();
-            res.status(200).send("user created")
-        }
+            return res.status(400).json({ error: error.details[0].message });
+        } 
+
+         // Check if the email already exists
+         const emailExist = await isEmailTaken(req.body.email);
+         if (emailExist) {
+             return res.status(400).json({ error: 'Email already exists' });
+         }
+
+        // hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+
+         // adding user
+        const user = new User({
+            fname: req.body.fname,
+            lname: req.body.lname,
+            email: req.body.email,
+            password: hashedPassword,
+        });
+
+        const savedUser = await user.save();
+        res.status(200).json({ message: "User created", user: savedUser });
+
     }
 
     catch (error){
-        res.status(500).send(error);
+        // res.status(500).json({error: error.message })
+        res.status(500).send(error)
     }
 });
 
