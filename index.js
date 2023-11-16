@@ -28,6 +28,7 @@ app.use(cors());
 
 app.use("/api/users", authRoute);
 
+
 app.get("/", (req, res) => {
     res.send(`Its working!`)
 });

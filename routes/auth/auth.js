@@ -13,6 +13,11 @@ const registerSchema = Joi.object({
     password: Joi.string().min(3).required(),
 })
 
+const loginSchema = Joi.object({
+    email: Joi.string().min(3).required().email(),
+    password: Joi.string().min(3).required(),
+});
+
 // Function to check if email already exists
 async function isEmailTaken(email) {
     return await User.findOne({ email: email });
@@ -21,7 +26,6 @@ async function isEmailTaken(email) {
 router.post("/register", async(req, res) => {
 
     try {
-        // validate user input
 
         const { error } = await registerSchema.validateAsync(req.body);
 
@@ -58,6 +62,29 @@ router.post("/register", async(req, res) => {
         // res.status(500).json({error: error.message })
         res.status(500).send(error)
     }
+});
+
+router.post("/login", async(req, res) => {
+
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) return res.status(400).send('Incorrect Email');
+
+    const validPassword = await bcrypt.compare(req.body.password, user.password)
+    if (!validPassword) return res.status(400).send('Invalid password');
+
+    try {
+        // validate user info
+
+        const { error } = await loginSchema.validateAsync(req.body);
+
+        if (error) return res.status(400).send(error.details[0].message);
+        else {
+            res.send('Login succesfull!')
+        }
+    } catch (error) {
+        res.status(500).send(error);
+    }
+
 });
 
 module.exports = router;
