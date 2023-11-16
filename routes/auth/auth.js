@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('..models/User');
+const User = require('../../models/User');
 
 //validation of user inputs
 const Joi = require("@hapi/joi");
@@ -46,7 +46,6 @@ router.post("/register", async(req, res) => {
             res.status(400).send(error.details[0].message);
             return;
         } else {
-
             // add user
             const saveUser = await user.save();
             res.status(200).send("user created")
