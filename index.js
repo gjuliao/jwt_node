@@ -6,7 +6,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 dotenv.config();
 
+// import routes
 const authRoute = require("./routes/auth/auth");
+const authDashboard = require('./routes/auth/authDashboard');
 
 
 mongoose.connect(process.env.DB_CONNECT, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -26,11 +28,13 @@ db.once('open', () => {
 app.use(express.json());
 app.use(cors());
 
-app.use("/api/users", authRoute);
-
 
 app.get("/", (req, res) => {
     res.send(`Its working!`)
 });
 
 app.listen(PORT, () => console.log(`server running on ${PORT}`));
+
+//routes
+app.use("/api/users", authRoute);
+app.use("/api/dashboard", authDashboard);
